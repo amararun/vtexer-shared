@@ -5,6 +5,16 @@ import ReactMarkdown from 'react-markdown';
 import AnalystPopup from './AnalystPopup';
 import GeneralAnalystPopup from './GeneralAnalystPopup';
 
+// Demo App Note
+const DemoAppNote = () => (
+  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded-md shadow-md">
+    <p className="font-bold text-lg">Demo Application Notice</p>
+    <p className="text-base">
+      This is a UI Framework deployed directly from my public GitHub repo: <a href="https://github.com/amararun/vtexer-shared" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">https://github.com/amararun/vtexer-shared</a>. For sharing purposes, I've made adjustments to the app by disconnecting it from my live Make.com workflow and replacing the individual ReAct agents with a single ReAct agent. Additionally, the app is no longer connected to live data sources or databases. To restore full functionality, you'll need to reintegrate the specific ReAct agents, connect to a live Make.com workflow with the correct data sources, and set up the Analyzer Text-to-SQL App. All the necessary steps are covered in detail in my implementation videos, with links provided in the GitHub repo.
+    </p>
+  </div>
+);
+
 const IconButton = ({ onClick, disabled, icon: Icon, size = 'h-12 w-12', className = '' }) => (
   <button
     onClick={onClick}
@@ -406,6 +416,7 @@ const SimpleVoiceBot = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-600 text-white py-12 px-4 sm:px-6 lg:px-8 animate-gradient-x">
       <div className="max-w-7xl mx-auto">
         <HeadlineBox />
+        <DemoAppNote />
         
         {/* Analyst Team Section */}
         <div className="mb-8 bg-gray-800 bg-opacity-50 p-4 rounded-lg shadow-lg">
