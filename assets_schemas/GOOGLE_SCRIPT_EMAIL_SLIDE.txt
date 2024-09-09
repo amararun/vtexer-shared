@@ -1,0 +1,71 @@
+function exportSlidesToPDF() {
+  try {
+    // Add a delay of 5 seconds (5,000 milliseconds)
+    Utilities.sleep(5000);
+
+    Logger.log("Starting exportSlidesToPDF function");
+    var date = new Date();
+    var pdfName = "TRACKER_DECK_FORMAT_" + Utilities.formatDate(date, Session.getScriptTimeZone(), "ddMMMyyyy") + ".pdf";
+    var presentationId = PropertiesService.getScriptProperties().getProperty('presentationId');
+    
+    if (!presentationId) {
+      throw new Error("Presentation ID not found. Ensure that the createGoogleSlidesFromSheet function has been run.");
+    }
+
+    Logger.log("Presentation ID found: " + presentationId);
+    var pdfBlob = DriveApp.getFileById(presentationId).getAs("application/pdf").setName(pdfName);
+    Logger.log("PDF blob created");
+
+    // Check if a PDF with the same name exists and delete it
+    var folder = DriveApp.getFolderById("1BnYJSO5Sa9qx3ffVP7FpFRjWNdMuszyx");
+    var existingFiles = folder.getFilesByName(pdfName);
+    while (existingFiles.hasNext()) {
+      var file = existingFiles.next();
+      file.setTrashed(true); // Move the existing file to trash
+    }
+    Logger.log("Existing PDF files deleted");
+
+    // Save the new PDF to the specified folder
+    var newFile = folder.createFile(pdfBlob);
+    Logger.log("PDF created and saved: " + pdfName);
+
+    // Email the PDF as an attachment
+    var emailAddress = "amarharolikar@gmail.com";
+    var subject = "TRACKER DECK FORMAT " + Utilities.formatDate(date, Session.getScriptTimeZone(), "ddMMMyyyy");
+    var body = "Hi,\n\nUpdated Gen AI Tracker.\n\nRegards,\nAmar";
+
+    Logger.log("Preparing to send email to: " + emailAddress);
+    MailApp.sendEmail({
+      to: emailAddress,
+      subject: subject,
+      body: body,
+      attachments: [newFile.getAs(MimeType.PDF)]
+    });
+    Logger.log("Email sent to " + emailAddress);
+  } catch (e) {
+    Logger.log("Error in exportSlidesToPDF: " + e.message);
+    throw new Error("Error in exportSlidesToPDF: " + e.message);
+  }
+}
+
+function doGet(e) {
+  try {
+    Logger.log("doGet triggered");
+    exportSlidesToPDF();
+    return ContentService.createTextOutput("PDF created and emailed successfully.").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    Logger.log("Error in doGet: " + error.message);
+    return ContentService.createTextOutput("Error: " + error.message).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
+function doPost(e) {
+  try {
+    Logger.log("doPost triggered");
+    exportSlidesToPDF();
+    return ContentService.createTextOutput("PDF created and emailed successfully.").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    Logger.log("Error in doPost: " + error.message);
+    return ContentService.createTextOutput("Error: " + error.message).setMimeType(ContentService.MimeType.TEXT);
+  }
+}

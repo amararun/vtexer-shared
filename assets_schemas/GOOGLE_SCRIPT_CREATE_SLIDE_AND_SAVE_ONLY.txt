@@ -1,0 +1,178 @@
+function createGoogleSlidesFromSheet() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
+  if (!sheet) {
+    Logger.log("Sheet not found");
+    throw new Error("Sheet not found");
+  }
+
+  var dataRange = sheet.getRange("A4:H" + sheet.getLastRow()); // Adjusted to start from row 4
+  var data = dataRange.getValues();
+
+  var date = new Date();
+  var formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), "d MMMM yyyy");
+  var presentationName = "TRACKER_" + Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyyMMdd");
+
+  // Check if a presentation with the same name exists and delete it
+  var slidesFiles = DriveApp.getFilesByName(presentationName);
+  while (slidesFiles.hasNext()) {
+    var file = slidesFiles.next();
+    file.setTrashed(true); // Move the existing file to trash
+  }
+
+  // Create a new Google Slides presentation
+  var presentation = SlidesApp.create(presentationName);
+
+  // Add title slide
+  var titleSlide = presentation.getSlides()[0];
+  titleSlide.getPageElements().forEach(function(element) {
+    element.remove();
+  });
+
+  var titleText = titleSlide.insertTextBox("Generative AI", 20, 20, 600, 70); // Adjusted height
+  titleText.getText().getTextStyle().setFontSize(36).setBold(true).setForegroundColor("#FFFFFF");
+  titleText.getFill().setSolidFill("#000080"); // Navy blue background
+
+  var subtitleText = titleSlide.insertTextBox("Exploratory Projects", 20, 110, 500, 50); // Shifted below
+  subtitleText.getText().getTextStyle().setFontSize(30).setBold(true).setForegroundColor("#FFFFFF");
+  subtitleText.getFill().setSolidFill("#000080"); // Navy blue background
+
+  var dateText = titleSlide.insertTextBox("Amar Harolikar\nSpecialist - Decision Sciences and Generative AI\n" + formattedDate, 3.66 * 72, 4.43 * 72, 6.12 * 72, 1.06 * 72); // Adjusted position and size
+  var dateTextStyle = dateText.getText().getTextStyle();
+  dateTextStyle.setFontSize(18).setItalic(true).setForegroundColor("#000080");
+
+  // Right-align the text in the text box
+  var textRange = dateText.getText();
+  var paragraphs = textRange.getParagraphs();
+  paragraphs.forEach(function(paragraph) {
+    paragraph.getRange().getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.END);
+  });
+
+  // Fetch the image from Google Drive
+  var imageId = "11T3dcJ6-ln9DgbFmeLx6htRqHYjbV4SB"; // Use the file ID from the shared link
+  var imageFile;
+  try {
+    imageFile = DriveApp.getFileById(imageId);
+  } catch (e) {
+    Logger.log("Failed to fetch image: " + e.message);
+    throw new Error("Failed to fetch image. Please ensure the image ID is correct and accessible.");
+  }
+
+  var imageBlob = imageFile.getBlob();
+
+  // Insert image on the title slide with different size and position
+  titleSlide.insertImage(imageBlob, 0.28 * 72, 2.64 * 72, 2.19 * 72, 0.97 * 72);
+
+  // Loop through the data and create a slide for each record
+  for (var i = 0; i < data.length; i++) { // Start from 0 as we already adjusted the range
+    var record = data[i];
+
+    var slide = presentation.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+
+    // Add header with navy blue background and white font color
+    var header = slide.insertTextBox(record[0], 20, 20, 680, 50); // Adjusted width
+    if (record[0]) {
+      header.getText().setText(record[0]);
+      header.getText().getTextStyle().setFontSize(24).setForegroundColor("#FFFFFF");
+      header.getFill().setSolidFill("#000080"); // Navy blue background
+    }
+
+    // Add description with light blue background
+    var description = slide.insertTextBox(record[1], 20, 80, 680, 40); // Adjusted width and height
+    if (record[1]) {
+      description.getText().setText(record[1]);
+      description.getText().getTextStyle().setFontSize(16);
+      description.getFill().setSolidFill("#D3E3FC");
+    }
+
+    // Add main use case with light blue background
+    var mainUseCase = slide.insertTextBox("Main Use Case\n" + record[2], 20, 130, 680, 60); // Adjusted width and height
+    if (record[2]) {
+      var mainUseCaseText = mainUseCase.getText();
+      mainUseCaseText.setText("Main Use Case\n" + record[2]);
+      mainUseCaseText.getTextStyle().setFontSize(16); // Set the font size to 16 for the entire text
+      var textRange = mainUseCaseText.asString();
+      var boldStart = textRange.indexOf("Main Use Case");
+      var boldEnd = boldStart + "Main Use Case".length;
+      mainUseCaseText.getTextStyle().setBold(false); // Set the whole text to non-bold
+      mainUseCaseText.getRange(boldStart, boldEnd).getTextStyle().setBold(true); // Make only the "Main Use Case" part bold
+      mainUseCase.getFill().setSolidFill("#D3E3FC");
+    }
+
+    // Add effort and cost side by side
+    var effort = slide.insertTextBox("Effort: " + record[3], 20, 200, 150, 30);
+    if (record[3]) {
+      effort.getText().setText("Effort: " + record[3]);
+      effort.getText().getTextStyle().setFontSize(16).setBold(true);
+    }
+
+    var cost = slide.insertTextBox("Cost: " + record[4], 180, 200, 150, 30);
+    if (record[4]) {
+      cost.getText().setText("Cost: " + record[4]);
+      cost.getText().getTextStyle().setFontSize(16).setBold(true);
+    }
+
+    // Add GPT Suggested Additional Use Cases header with light blue background
+    var gptHeader = slide.insertTextBox("GPT Suggested Additional Use Cases", 20, 240, 680, 30); // Adjusted width
+    gptHeader.getText().getTextStyle().setFontSize(16).setBold(true);
+    gptHeader.getFill().setSolidFill("#D3E3FC");
+
+    // Add GPT use case 1
+    var gptUseCase1 = slide.insertTextBox(record[5], 20, 280, 200, 50);
+    if (record[5]) {
+      gptUseCase1.getText().setText(record[5]);
+      gptUseCase1.getText().getTextStyle().setFontSize(15); // Reduced font size
+    }
+
+    // Add GPT use case 2
+    var gptUseCase2 = slide.insertTextBox(record[6], 240, 280, 200, 50);
+    if (record[6]) {
+      gptUseCase2.getText().setText(record[6]);
+      gptUseCase2.getText().getTextStyle().setFontSize(15); // Reduced font size
+    }
+
+    // Add GPT use case 3
+    var gptUseCase3 = slide.insertTextBox(record[7], 460, 280, 200, 50);
+    if (record[7]) {
+      gptUseCase3.getText().setText(record[7]);
+      gptUseCase3.getText().getTextStyle().setFontSize(15); // Reduced font size
+    }
+
+    // Insert a thin line above the footer
+    var line = slide.insertLine(SlidesApp.LineCategory.STRAIGHT, 0.28 * 72, 5.14 * 72, 9.72 * 72, 5.14 * 72);
+    line.getLineFill().setSolidFill("#000000");
+    line.setWeight(1);
+
+    // Add footer
+    var footer = slide.insertTextBox("Amar Harolikar | Specialist - Decision Sciences and Generative AI", 20, 370, 680, 20); // Shifted down
+    footer.getText().getTextStyle().setFontSize(11).setItalic(true).setBold(true).setForegroundColor("#000000");
+    footer.getFill().setTransparent();
+
+    // Insert image on each slide with different size and position
+    slide.insertImage(imageBlob, 8.17 * 72, 0.28 * 72, 1.56 * 72, 0.69 * 72);
+  }
+
+  Logger.log("Google Slides created: " + presentation.getUrl());
+
+  // Store the presentation ID for later use
+  PropertiesService.getScriptProperties().setProperty('presentationId', presentation.getId());
+}
+
+function doGet(e) {
+  try {
+    createGoogleSlidesFromSheet();
+    return ContentService.createTextOutput("Slides created successfully.").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    Logger.log("Error: " + error.message);
+    return ContentService.createTextOutput("Error: " + error.message).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
+function doPost(e) {
+  try {
+    createGoogleSlidesFromSheet();
+    return ContentService.createTextOutput("Slides created successfully.").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    Logger.log("Error: " + error.message);
+    return ContentService.createTextOutput("Error: " + error.message).setMimeType(ContentService.MimeType.TEXT);
+  }
+}

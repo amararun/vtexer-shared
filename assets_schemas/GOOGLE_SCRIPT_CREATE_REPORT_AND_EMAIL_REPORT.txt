@@ -1,0 +1,84 @@
+function printSelectionToPDF() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
+  if (!sheet) {
+    Logger.log("Sheet not found");
+    throw new Error("Sheet not found");
+  }
+
+  // Identify the last populated row in columns A to H
+  var lastRow = sheet.getLastRow();
+  var rangeString = "A1:H" + lastRow;
+
+  var spreadsheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
+  var sheetId = sheet.getSheetId();
+
+  var url_base = "https://docs.google.com/spreadsheets/d/";
+  var url_ext = "/export?exportFormat=pdf&format=pdf" // export as pdf
+    + "&size=A4" // paper size
+    + "&portrait=false" // orientation, false for landscape
+    + "&fitw=true" // fit to width, false for actual size
+    + "&sheetnames=false&printtitle=false&pagenumbers=false" // hide optional elements
+    + "&gridlines=false" // hide gridlines
+    + "&fzr=false" // do not repeat frozen rows
+    + "&range=" + rangeString // specify the range
+    + "&gid=" + sheetId; // the sheet's Id
+
+  var token = ScriptApp.getOAuthToken();
+
+  var response = UrlFetchApp.fetch(url_base + spreadsheetId + url_ext, {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+
+  var date = new Date();
+  var formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyyMMdd");
+  var fileName = "TRACKER_" + formattedDate + ".pdf";
+  var blob = response.getBlob().setName(fileName);
+
+  var folder = DriveApp.getFolderById("1BnYJSO5Sa9qx3ffVP7FpFRjWNdMuszyx"); // Your folder ID
+
+  // Check if file already exists and delete it
+  var files = folder.getFilesByName(fileName);
+  while (files.hasNext()) {
+    var file = files.next();
+    file.setTrashed(true); // Move the existing file to trash
+  }
+
+  var newFile = folder.createFile(blob);
+  Logger.log("PDF created: " + fileName);
+
+  // Email the PDF as an attachment
+  var emailAddress = "amarharolikar@gmail.com";
+  var subject = "TRACKER " + Utilities.formatDate(date, Session.getScriptTimeZone(), "ddMMYYYY");
+  var body = "Hi,\n\nUpdated Gen AI Tracker.\n\nRegards,\nAmar";
+
+  MailApp.sendEmail({
+    to: emailAddress,
+    subject: subject,
+    body: body,
+    attachments: [newFile.getAs(MimeType.PDF)]
+  });
+
+  Logger.log("Email sent to " + emailAddress);
+}
+
+function doGet(e) {
+  try {
+    printSelectionToPDF();
+    return ContentService.createTextOutput("PDF created and emailed successfully.").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    Logger.log("Error: " + error.message);
+    return ContentService.createTextOutput("Error: " + error.message).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
+function doPost(e) {
+  try {
+    printSelectionToPDF();
+    return ContentService.createTextOutput("PDF created and emailed successfully.").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    Logger.log("Error: " + error.message);
+    return ContentService.createTextOutput("Error: " + error.message).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
