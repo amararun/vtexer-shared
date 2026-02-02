@@ -18,3 +18,9 @@ Replicating this bot ASIS with live deploy takes under 10 minutes. (5 mins to cl
 - Part 3: Google Script Automation
 - Part 4: Fully Customized React based Frontend
 - Part 5: Additional ReAct Agents in Flowise. Deploy to Vercel. Go live
+
+## Author
+
+Built by [Amar Harolikar](https://www.linkedin.com/in/amarharolikar/)
+
+Explore 30+ open source AI tools for analytics, databases & automation at [tigzig.com](https://tigzig.com)
