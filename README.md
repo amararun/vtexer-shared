@@ -1,5 +1,4 @@
-> [\!NOTE]
-> This repository is a working example of the concept described below. It may not yet include all recommended security hardening measures. My newer repositories now have robust security at both frontend and backend layers — rate limiting, SQL validation, concurrency controls, error sanitization, and more. You can use this repo to understand the core concept, but please apply security best practices before deploying to production. See my [Security Checklist](https://tigzig.com/security) and [live hardened examples](https://tigzig.com/security-examples) for reference.
+**This repo is archived and no longer maintained.** It stays up as reference code for the build guides. No updates, including security updates, so review before you use any of it anywhere serious. The live apps run on newer, hardened versions of this code.
 
 # This repository is deprecated
 This repository is outdated, experimental and practially not usable.
